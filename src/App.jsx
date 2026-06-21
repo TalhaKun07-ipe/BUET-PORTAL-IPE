@@ -145,6 +145,7 @@ function MainApp() {
 
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showMobileProfileModal, setShowMobileProfileModal] = useState(false);
 
   // Helper: navigate to a view, but guard protected views for public (allowlist approach)
   const navigateTo = (targetView) => {
@@ -426,7 +427,12 @@ function MainApp() {
           <ImageIcon size={20} />
           <span className="text-[9px] font-mono mt-1">Gallery</span>
         </button>
-        {!user && (
+        {user ? (
+          <button onClick={() => setShowMobileProfileModal(true)} className="flex flex-col items-center text-white/40 hover:text-champagne">
+            <User size={20} className="text-white/50" />
+            <span className="text-[9px] font-mono mt-1">Profile</span>
+          </button>
+        ) : (
           <button onClick={() => setView('login')} className={`flex flex-col items-center ${view === 'login' ? 'text-champagne' : 'text-white/40'}`}>
             <LogIn size={20} />
             <span className="text-[9px] font-mono mt-1">Login</span>
@@ -490,6 +496,18 @@ function MainApp() {
       {user && <RoleRequestModal isOpen={showRoleModal} onClose={() => setShowRoleModal(false)} />}
       {/* Change Password Modal */}
       {user && <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />}
+      {/* Mobile Profile Modal */}
+      {user && (
+        <MobileProfileModal 
+          isOpen={showMobileProfileModal} 
+          onClose={() => setShowMobileProfileModal(false)} 
+          profile={profile}
+          user={user}
+          signOut={signOut}
+          setShowRoleModal={setShowRoleModal}
+          setShowPasswordModal={setShowPasswordModal}
+        />
+      )}
     </div>
   );
 }
@@ -2879,6 +2897,93 @@ function ChangePasswordModal({ isOpen, onClose }) {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// MOBILE PROFILE DETAILS MODAL
+// ==========================================
+function MobileProfileModal({ isOpen, onClose, profile, user, signOut, setShowRoleModal, setShowPasswordModal }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#121217] border border-white/10 rounded-[2rem] p-8 max-w-sm w-full relative">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-center text-champagne">
+            <User size={22} className="text-champagne" />
+          </div>
+          <div>
+            <h3 className="font-sans font-bold text-sm text-white uppercase tracking-wider">Your Profile</h3>
+            <p className="font-mono text-[8px] text-white/40 uppercase tracking-wider">Account Credentials & Info</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 font-sans text-xs bg-white/[0.02] border border-white/5 p-4 rounded-xl mb-6">
+          <div className="flex justify-between items-center">
+            <span className="text-white/45">Name:</span>
+            <span className="font-bold text-white">{profile?.full_name || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-white/45">Email:</span>
+            <span className="text-white/80 font-mono text-[11px]">{user?.email || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-white/45">Student ID:</span>
+            <span className="text-white/80 font-mono">{profile?.student_id || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-white/45">Role & Section:</span>
+            <span className="font-bold text-champagne uppercase">
+              {profile?.role || 'student'} {profile?.section ? `[${profile.section}]` : ''}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {profile?.role === 'student' && (
+            <button
+              onClick={() => {
+                onClose();
+                setShowRoleModal(true);
+              }}
+              className="w-full py-2.5 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-champagne/40 text-champagne font-mono text-[10px] font-bold rounded-xl uppercase tracking-wider transition-all"
+            >
+              Request CR / Admin
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              onClose();
+              setShowPasswordModal(true);
+            }}
+            className="w-full py-2.5 bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-champagne/40 text-white/80 hover:text-white font-mono text-[10px] font-bold rounded-xl uppercase tracking-wider transition-all flex items-center justify-center space-x-1.5"
+          >
+            <KeyRound size={12} />
+            <span>Change Password</span>
+          </button>
+
+          <button
+            onClick={async () => {
+              onClose();
+              await signOut();
+            }}
+            className="w-full py-2.5 bg-red-950/20 hover:bg-red-950/40 border border-red-950/50 hover:border-red-500/50 text-red-400 font-mono text-[10px] font-bold rounded-xl uppercase tracking-wider transition-all flex items-center justify-center space-x-1.5"
+          >
+            <LogOut size={12} />
+            <span>Sign Out</span>
+          </button>
+
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 bg-white/5 border border-white/10 text-white font-mono text-[10px] font-bold rounded-xl hover:bg-white/10 transition-all mt-4"
+          >
+            CLOSE
+          </button>
+        </div>
       </div>
     </div>
   );
