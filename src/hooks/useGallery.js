@@ -40,6 +40,15 @@ export function useGallery() {
     let imageUrl = '';
 
     if (imageFileOrUrl instanceof File) {
+      // Validate file type
+      if (!imageFileOrUrl.type.startsWith('image/')) {
+        throw new Error('Invalid file type. Only images are allowed.');
+      }
+      // Validate file size (max 5MB)
+      if (imageFileOrUrl.size > 5 * 1024 * 1024) {
+        throw new Error('Image size must be under 5MB.');
+      }
+
       // 1. Upload to Supabase Storage 'gallery' bucket
       const fileExt = imageFileOrUrl.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;

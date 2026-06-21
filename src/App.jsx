@@ -145,10 +145,10 @@ function MainApp() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Helper: navigate to a view, but guard protected views for public
+  // Helper: navigate to a view, but guard protected views for public (allowlist approach)
   const navigateTo = (targetView) => {
-    const protectedViews = ['harmonize', 'accelerate', 'admin'];
-    if (!user && protectedViews.includes(targetView)) {
+    const publicViews = ['home', 'preserve', 'login'];
+    if (!user && !publicViews.includes(targetView)) {
       setView('login');
     } else {
       setView(targetView);
@@ -161,6 +161,18 @@ function MainApp() {
       setView('home');
     }
   }, [user, view]);
+
+  // Handle password recovery link events
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordModal(true);
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
 
   // Smooth Scroll with Lenis

@@ -114,6 +114,29 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+-- Trigger to protect profile role and section from client-side manipulation
+CREATE OR REPLACE FUNCTION public.protect_profile_roles()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.role IS DISTINCT FROM OLD.role OR NEW.section IS DISTINCT FROM OLD.section) THEN
+        IF CURRENT_USER <> 'postgres' THEN
+            IF NOT EXISTS (
+                SELECT 1 FROM public.profiles 
+                WHERE id = auth.uid() AND role = 'admin'
+            ) THEN
+                RAISE EXCEPTION 'Unauthorized to modify role or section columns directly.';
+            END IF;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_profile_update
+    BEFORE UPDATE ON public.profiles
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.protect_profile_roles();
+
 -- Policies for Profiles
 CREATE POLICY "Public profiles are viewable by authenticated users" 
     ON public.profiles FOR SELECT TO authenticated USING (true);
@@ -140,7 +163,10 @@ CREATE POLICY "Notices are viewable by authenticated users"
 
 CREATE POLICY "Admins and CRs can insert notices" 
     ON public.notices FOR INSERT TO authenticated 
-    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'cr')));
+    WITH CHECK (
+        (author_id = auth.uid()) AND
+        (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'cr')))
+    );
 
 CREATE POLICY "Authors, CRs and Admins can delete/update notices" 
     ON public.notices FOR ALL TO authenticated 
@@ -153,10 +179,11 @@ CREATE POLICY "Routines are viewable by authenticated users"
 CREATE POLICY "Admins and CRs can insert routines" 
     ON public.routines FOR INSERT TO authenticated 
     WITH CHECK (
-        EXISTS (
+        (created_by = auth.uid()) AND
+        (EXISTS (
             SELECT 1 FROM public.profiles 
             WHERE id = auth.uid() AND (role = 'admin' OR (role = 'cr' AND section = routines.section))
-        )
+        ))
     );
 
 CREATE POLICY "Creators and Admins can modify/delete routines" 
@@ -172,7 +199,10 @@ CREATE POLICY "Attachments are viewable by authenticated users"
 
 CREATE POLICY "Admins and CRs can insert attachments" 
     ON public.attachments FOR INSERT TO authenticated 
-    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'cr')));
+    WITH CHECK (
+        (uploaded_by = auth.uid()) AND
+        (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'cr')))
+    );
 
 CREATE POLICY "Uploaders, CRs and Admins can modify/delete attachments" 
     ON public.attachments FOR ALL TO authenticated 
@@ -194,6 +224,23 @@ CREATE POLICY "Uploaders and Admins can delete gallery items"
     USING (
         auth.uid() = uploaded_by OR 
         EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    );
+
+-- Policies for Storage Buckets
+CREATE POLICY "Allow authenticated users to upload to moments" ON storage.objects
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        bucket_id = 'gallery' AND 
+        (storage.foldername(name))[1] = 'moments'
+    );
+
+CREATE POLICY "Allow uploaders and admins to delete from moments" ON storage.objects
+    FOR DELETE TO authenticated
+    USING (
+        bucket_id = 'gallery' AND (
+            owner = auth.uid() OR
+            EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+        )
     );
 
 -- Trigger to automatically update profile role/section when role request is approved
