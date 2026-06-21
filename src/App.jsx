@@ -48,6 +48,7 @@ import { useRoutines } from './hooks/useRoutines';
 import { useAttachments } from './hooks/useAttachments';
 import { useGallery } from './hooks/useGallery';
 import { useRoleRequests } from './hooks/useRoleRequests';
+import { supabase } from './lib/supabase';
 
 
 gsap.registerPlugin(ScrollTrigger);
