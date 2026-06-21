@@ -144,6 +144,11 @@ CREATE POLICY "Public profiles are viewable by authenticated users"
 CREATE POLICY "Users can update their own profile details" 
     ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 
+CREATE POLICY "Admins can update any profile" 
+    ON public.profiles FOR UPDATE TO authenticated 
+    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+    WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
 -- Policies for Role Requests
 CREATE POLICY "Users can view their own role requests" 
     ON public.role_requests FOR SELECT TO authenticated 
