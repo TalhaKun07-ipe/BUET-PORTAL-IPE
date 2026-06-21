@@ -1262,18 +1262,18 @@ function HarmonizeView({ setView, notices, addNotice, deleteNotice, schedule, ad
           <h3 className="font-sans font-extrabold text-lg text-white uppercase tracking-tight">Current Week Routine</h3>
           
           {/* Section Filter Pills */}
-          <div className="flex items-center space-x-1.5 bg-white/[0.02] border border-white/10 p-1 rounded-xl">
+          <div className="flex items-center space-x-1 sm:space-x-1.5 bg-white/[0.02] border border-white/10 p-1 rounded-xl shrink-0">
             {['A1', 'A2', 'B1', 'B2'].map(sec => (
               <button
                 key={sec}
                 onClick={() => setViewSection(sec)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition-all whitespace-nowrap ${
                   viewSection === sec
                     ? 'bg-champagne text-obsidian shadow-sm'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
-                Section {sec}
+                <span className="hidden sm:inline">Section </span>{sec}
               </button>
             ))}
           </div>
