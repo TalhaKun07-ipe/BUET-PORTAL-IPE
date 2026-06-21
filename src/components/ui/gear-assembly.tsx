@@ -535,7 +535,25 @@ export function GearAssembly() {
       }
     };
 
+    let isVisible = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = isVisible;
+        isVisible = entry.isIntersecting;
+        if (isVisible && !wasVisible) {
+          // Resume animation loop when scrolling back into view
+          tick();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
     const tick = () => {
+      if (!isVisible) return;
       update();
       draw();
       animationId = requestAnimationFrame(tick);
@@ -547,6 +565,7 @@ export function GearAssembly() {
       cancelAnimationFrame(animationId);
       canvas.removeEventListener('click', handleCanvasClick);
       resizeObserver.disconnect();
+      observer.disconnect();
     };
   }, []);
 

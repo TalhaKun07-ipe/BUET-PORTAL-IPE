@@ -879,12 +879,16 @@ function ProtocolPinSection({ navigateTo }) {
         }
       });
 
+      // Query screen properties to optimize blur on smaller/mobile layouts
+      const isMobile = window.innerWidth < 768;
+      const maxBlur = isMobile ? '4px' : '8px';
+
       tl.fromTo(card2.current, 
         { yPercent: 100, scale: 0.95 },
         { yPercent: 0, scale: 1, ease: 'none' }
       );
       tl.to(card1.current, 
-        { scale: 0.9, opacity: 0.4, filter: 'blur(10px)', ease: 'none' }, 
+        { scale: 0.92, opacity: 0.45, filter: `blur(${maxBlur})`, ease: 'none' }, 
         '<'
       );
 
@@ -893,7 +897,7 @@ function ProtocolPinSection({ navigateTo }) {
         { yPercent: 0, scale: 1, ease: 'none' }
       );
       tl.to(card2.current, 
-        { scale: 0.9, opacity: 0.4, filter: 'blur(10px)', ease: 'none' }, 
+        { scale: 0.92, opacity: 0.45, filter: `blur(${maxBlur})`, ease: 'none' }, 
         '<'
       );
     }, pinRef);
@@ -914,20 +918,19 @@ function ProtocolPinSection({ navigateTo }) {
       {/* CARD 1: PLAN */}
       <div 
         ref={card1}
-        className="absolute inset-0 w-full h-full bg-[#121217] flex items-center justify-center p-8 md:p-16 border-t border-white/5"
+        className="absolute inset-0 w-full h-full bg-[#121217] flex items-center justify-center p-6 md:p-16 border-t border-white/5 [will-change:transform,opacity,filter]"
       >
-        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-
-            <h3 className="font-sans font-extrabold text-3xl sm:text-5xl text-white uppercase leading-none tracking-tight">
+        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center">
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="font-sans font-extrabold text-2xl sm:text-4xl md:text-5xl text-white uppercase leading-none tracking-tight">
               PLAN THE PATH
             </h3>
-            <p className="font-sans text-sm md:text-base text-white/60 leading-relaxed">
+            <p className="font-sans text-xs md:text-base text-white/60 leading-relaxed">
               Planning the path. Harmonize aggregates notices, routine shifts, and test timelines to map out our academic journey.
             </p>
             <button 
               onClick={() => navigateTo('harmonize')}
-              className="px-6 py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
+              className="px-5 py-2.5 md:px-6 md:py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-[10px] md:text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
             >
               <span>Explore Notice Board</span>
               <ArrowRight size={14} />
@@ -935,7 +938,7 @@ function ProtocolPinSection({ navigateTo }) {
           </div>
 
           {/* Canvas/SVG: Rotating Gears */}
-          <div className="flex items-center justify-center p-6 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-sm mx-auto w-full">
+          <div className="flex items-center justify-center p-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-[200px] md:max-w-sm mx-auto w-full">
             <GearClock />
           </div>
         </div>
@@ -944,20 +947,19 @@ function ProtocolPinSection({ navigateTo }) {
       {/* CARD 2: INNOVATE */}
       <div 
         ref={card2}
-        className="absolute inset-0 w-full h-full bg-[#17171d] flex items-center justify-center p-8 md:p-16 border-t border-white/5"
+        className="absolute inset-0 w-full h-full bg-[#17171d] flex items-center justify-center p-6 md:p-16 border-t border-white/5 [will-change:transform,opacity,filter]"
       >
-        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-
-            <h3 className="font-sans font-extrabold text-3xl sm:text-5xl text-white uppercase leading-none tracking-tight">
+        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center">
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="font-sans font-extrabold text-2xl sm:text-4xl md:text-5xl text-white uppercase leading-none tracking-tight">
               INNOVATE THE SOLUTION
             </h3>
-            <p className="font-sans text-sm md:text-base text-white/60 leading-relaxed">
+            <p className="font-sans text-xs md:text-base text-white/60 leading-relaxed">
               Innovating the solution. Accelerate delivers syllabus-aligned slides, sessional manuals, and resource vaults.
             </p>
             <button 
               onClick={() => navigateTo('accelerate')}
-              className="px-6 py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
+              className="px-5 py-2.5 md:px-6 md:py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-[10px] md:text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
             >
               <span>Access Slide Vault</span>
               <ArrowRight size={14} />
@@ -965,7 +967,7 @@ function ProtocolPinSection({ navigateTo }) {
           </div>
 
           {/* Interactive Gear Assembly Simulation */}
-          <div className="flex items-center justify-center p-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-sm mx-auto w-full relative overflow-hidden">
+          <div className="flex items-center justify-center p-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-[200px] md:max-w-sm mx-auto w-full relative overflow-hidden">
             <GearAssembly />
           </div>
         </div>
@@ -974,20 +976,19 @@ function ProtocolPinSection({ navigateTo }) {
       {/* CARD 3: EXECUTE */}
       <div 
         ref={card3}
-        className="absolute inset-0 w-full h-full bg-[#1b1b22] flex items-center justify-center p-8 md:p-16 border-t border-white/5"
+        className="absolute inset-0 w-full h-full bg-[#1b1b22] flex items-center justify-center p-6 md:p-16 border-t border-white/5 [will-change:transform,opacity,filter]"
       >
-        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-
-            <h3 className="font-sans font-extrabold text-3xl sm:text-5xl text-white uppercase leading-none tracking-tight">
+        <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center">
+          <div className="space-y-4 md:space-y-6">
+            <h3 className="font-sans font-extrabold text-2xl sm:text-4xl md:text-5xl text-white uppercase leading-none tracking-tight">
               EXECUTE THE VISION
             </h3>
-            <p className="font-sans text-sm md:text-base text-white/60 leading-relaxed">
+            <p className="font-sans text-xs md:text-base text-white/60 leading-relaxed">
               Executing the vision. Preserve archives our shared achievements, field tours, sports highlights, and batch legacy.
             </p>
             <button 
               onClick={() => navigateTo('preserve')}
-              className="px-6 py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
+              className="px-5 py-2.5 md:px-6 md:py-3 rounded-xl bg-champagne text-obsidian font-sans font-bold text-[10px] md:text-xs tracking-wider uppercase inline-flex items-center space-x-2 transition-all hover:scale-105"
             >
               <span>Explore Photo Gallery</span>
               <ArrowRight size={14} />
@@ -995,7 +996,7 @@ function ProtocolPinSection({ navigateTo }) {
           </div>
 
           {/* Interactive Wrench Gear Repair Simulation */}
-          <div className="flex items-center justify-center p-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-sm mx-auto w-full relative overflow-hidden">
+          <div className="flex items-center justify-center p-4 bg-white/[0.01] border border-white/5 rounded-[2.5rem] aspect-square max-w-[200px] md:max-w-sm mx-auto w-full relative overflow-hidden">
             <WrenchGear />
           </div>
         </div>

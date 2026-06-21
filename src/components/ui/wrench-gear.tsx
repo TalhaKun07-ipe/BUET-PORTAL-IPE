@@ -462,7 +462,24 @@ export function WrenchGear() {
       ctx.fillText(statusLabel, width / 2, height - 16);
     };
 
+    let isVisible = true;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const wasVisible = isVisible;
+        isVisible = entry.isIntersecting;
+        if (isVisible && !wasVisible) {
+          tick();
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
     const tick = () => {
+      if (!isVisible) return;
       update();
       draw();
       animationId = requestAnimationFrame(tick);
@@ -473,6 +490,7 @@ export function WrenchGear() {
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resizeCanvas);
+      observer.disconnect();
     };
   }, []);
 
