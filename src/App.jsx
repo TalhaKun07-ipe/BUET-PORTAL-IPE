@@ -397,7 +397,7 @@ function MainApp() {
                 className="w-full py-2.5 px-3 bg-champagne text-obsidian rounded-xl text-[10px] font-mono uppercase font-bold tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-1.5"
               >
                 <LogIn size={12} />
-                <span>Sign In / Register</span>
+                <span>Secure Sign In</span>
               </button>
               <p className="font-mono text-[8px] text-white/25 text-center leading-relaxed">
                 IPE'25 batch members only

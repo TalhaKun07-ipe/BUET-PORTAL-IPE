@@ -1,26 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, UserPlus, ShieldAlert, Loader2, Sparkles, ArrowLeft, KeyRound, Mail } from 'lucide-react';
+import { LogIn, ShieldAlert, Loader2, Sparkles, ArrowLeft, KeyRound, Mail } from 'lucide-react';
 
 export default function LoginPage({ onBack }) {
-  const { signIn, signUp, resetPassword } = useAuth();
-  const [mode, setMode] = useState('login'); // 'login', 'signup', 'forgot'
+  const { signIn, resetPassword } = useAuth();
+  const [mode, setMode] = useState('login'); // 'login', 'forgot'
   
   // Form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [studentId, setStudentId] = useState('');
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // Validate roll number is in IPE'25 batch range
-  const isValidRoll = (roll) => {
-    const num = parseInt(roll, 10);
-    return !isNaN(num) && num >= 202508001 && num <= 202508120;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,18 +25,6 @@ export default function LoginPage({ onBack }) {
         if (!email) throw new Error('Please enter your registered email address.');
         await resetPassword(email);
         setSuccess('Password reset link sent! Check your email inbox.');
-      } else if (mode === 'signup') {
-        // Roll number validation
-        if (!studentId || !isValidRoll(studentId.trim())) {
-          throw new Error('Registration is restricted to IPE\'25 batch students (Roll 202508001–202508120).');
-        }
-        if (!fullName || fullName.trim().length < 2) {
-          throw new Error('Please enter your full name.');
-        }
-
-        await signUp(email, password, fullName.trim(), studentId.trim());
-        setSuccess('Registration successful! Please check your email inbox to verify your account, or sign in if email confirmation is disabled.');
-        setMode('login');
       } else {
         await signIn(email, password);
         // Auth state change will handle the rest
@@ -108,37 +88,6 @@ export default function LoginPage({ onBack }) {
 
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'signup' && (
-            <>
-              <div>
-                <label className="block font-mono text-[10px] uppercase text-white/50 tracking-wider mb-2">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Talha Zubayer"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-champagne/50 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-[10px] uppercase text-white/50 tracking-wider mb-2">Student ID / Roll</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 202508059"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-champagne/50 transition-colors"
-                />
-                <p className="font-mono text-[8px] text-white/30 mt-1.5 tracking-wide">
-                  Only rolls 202508001 – 202508120 are eligible for registration.
-                </p>
-              </div>
-            </>
-          )}
-
           {mode !== 'forgot' && (
             <>
               <div>
@@ -193,11 +142,6 @@ export default function LoginPage({ onBack }) {
                 <Mail size={16} />
                 <span>Send Reset Link</span>
               </>
-            ) : mode === 'signup' ? (
-              <>
-                <UserPlus size={16} />
-                <span>Register Account</span>
-              </>
             ) : (
               <>
                 <LogIn size={16} />
@@ -221,30 +165,18 @@ export default function LoginPage({ onBack }) {
               ← Back to Sign In
             </button>
           ) : (
-            <>
+            mode === 'login' && (
               <button
                 onClick={() => {
-                  setMode(mode === 'signup' ? 'login' : 'signup');
+                  setMode('forgot');
                   setError(null);
                   setSuccess(null);
                 }}
-                className="font-mono text-[10px] uppercase tracking-wider text-champagne/60 hover:text-white transition-colors block mx-auto"
+                className="font-mono text-[10px] uppercase tracking-wider text-white/30 hover:text-champagne/60 transition-colors block mx-auto"
               >
-                {mode === 'signup' ? 'Already registered? Sign In' : 'New student? Register here'}
+                Forgot Password?
               </button>
-              {mode === 'login' && (
-                <button
-                  onClick={() => {
-                    setMode('forgot');
-                    setError(null);
-                    setSuccess(null);
-                  }}
-                  className="font-mono text-[10px] uppercase tracking-wider text-white/30 hover:text-champagne/60 transition-colors block mx-auto"
-                >
-                  Forgot Password?
-                </button>
-              )}
-            </>
+            )
           )}
         </div>
       </div>
