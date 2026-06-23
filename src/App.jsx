@@ -66,8 +66,12 @@ const detectProvider = (url) => {
   if (lowerUrl.includes('dropbox.com')) {
     return { name: 'Dropbox', type: 'dropbox', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' };
   }
-  return { name: 'Cloud Storage', type: 'generic', color: 'text-white/40 bg-white/5 border-white/10' };
+  if (lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('/pdf/')) {
+    return { name: 'PDF Link', type: 'pdf', color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' };
+  }
+  return { name: 'Web Link', type: 'web', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
 };
+
 
 // --- Dummy Data ---
 
@@ -1449,6 +1453,25 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
     }
   };
 
+  const handleUrlChange = (val) => {
+    setDriveUrl(val);
+    if (!val) return;
+    const lowerVal = val.toLowerCase();
+    if (lowerVal.includes('onedrive.live.com') || lowerVal.includes('sharepoint.com') || lowerVal.includes('1drv.ms') || lowerVal.includes('buet-my.sharepoint.com')) {
+      setFileType('PDF');
+      if (fileSize === 'PDF Link' || fileSize === 'Web Link') setFileSize('2.5 MB');
+    } else if (lowerVal.includes('drive.google.com') || lowerVal.includes('google.com/drive') || lowerVal.includes('dropbox.com')) {
+      setFileType('PDF');
+      if (fileSize === 'PDF Link' || fileSize === 'Web Link') setFileSize('2.5 MB');
+    } else if (lowerVal.endsWith('.pdf') || lowerVal.includes('.pdf?') || lowerVal.includes('/pdf/')) {
+      setFileType('PDF');
+      setFileSize('PDF Link');
+    } else {
+      setFileType('LINK');
+      setFileSize('Web Link');
+    }
+  };
+
   const handleDownload = (id, targetUrl) => {
     if (downloadProgress[id]) return;
 
@@ -1584,17 +1607,17 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
                 </div>
 
                 <div>
-                  <label className="block font-mono text-[9px] text-white/50 uppercase tracking-widest mb-1.5">Resource Link (OneDrive / Google Drive)</label>
+                  <label className="block font-mono text-[9px] text-white/50 uppercase tracking-widest mb-1.5">Resource Link (OneDrive / Google Drive / External PDF / Website)</label>
                   <input 
                     type="url" 
                     value={driveUrl} 
-                    onChange={(e) => setDriveUrl(e.target.value)} 
-                    placeholder="OneDrive (e.g. https://buet-my.sharepoint.com/:f:/...) or Google Drive link"
+                    onChange={(e) => handleUrlChange(e.target.value)} 
+                    placeholder="OneDrive, Google Drive, Dropbox, or any external PDF / Website URL"
                     className="w-full bg-white/[0.02] border border-white/10 focus:border-champagne/50 rounded-xl px-4 py-2.5 text-xs font-sans text-white outline-none"
                     required
                   />
                   <p className="font-mono text-[8px] text-white/30 mt-1.5 tracking-wide">
-                    You can host folders/files in your 1TB BUET OneDrive (Share to Copy Link with BUET/anyone permission) or Google Drive.
+                    You can host folders/files in your 1TB BUET OneDrive (Share to Copy Link with BUET/anyone permission), Google Drive, Dropbox, or paste any direct PDF link or external website.
                   </p>
                 </div>
 
@@ -1655,7 +1678,13 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
                       </span>
                       <div className="flex items-center space-x-2">
                         <span className={`font-mono text-[8px] px-2 py-0.5 rounded border flex items-center space-x-1 uppercase font-semibold transition-all ${provider.color}`}>
-                          <Cloud size={8} className="shrink-0" />
+                          {provider.type === 'pdf' ? (
+                            <FileText size={8} className="shrink-0" />
+                          ) : provider.type === 'web' ? (
+                            <ExternalLink size={8} className="shrink-0" />
+                          ) : (
+                            <Cloud size={8} className="shrink-0" />
+                          )}
                           <span>{provider.name}</span>
                         </span>
                         <span className="font-mono text-[8px] bg-white/5 text-white/70 px-2 py-0.5 rounded">
@@ -1690,7 +1719,13 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
                       prog.status === 'loading' ? (
                         <div className="space-y-2">
                           <div className="flex justify-between font-mono text-[9px] text-champagne/80">
-                            <span>CONNECTING TO {provider.name.toUpperCase()}...</span>
+                            <span>
+                              {provider.type === 'pdf' 
+                                ? 'LOADING PDF RESOURCE...' 
+                                : provider.type === 'web' 
+                                  ? 'CONNECTING TO WEBSITE...' 
+                                  : `CONNECTING TO ${provider.name.toUpperCase()}...`}
+                            </span>
                             <span>{prog.percent}%</span>
                           </div>
                           <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
@@ -1700,7 +1735,13 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
                       ) : (
                         <div className="flex items-center space-x-1.5 text-emerald-400 font-mono text-[9px]">
                           <Check size={12} />
-                          <span>REDIRECTING TO {provider.name.toUpperCase()}</span>
+                          <span>
+                            {provider.type === 'pdf' 
+                              ? 'OPENING PDF FILE' 
+                              : provider.type === 'web' 
+                                ? 'REDIRECTING TO WEBSITE' 
+                                : `REDIRECTING TO ${provider.name.toUpperCase()}`}
+                          </span>
                         </div>
                       )
                     ) : (
@@ -1708,8 +1749,17 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
                         onClick={() => handleDownload(file.id, file.drive_url)}
                         className="w-full py-2.5 rounded-xl border border-white/5 hover:border-champagne/20 hover:bg-champagne/[0.02] flex items-center justify-center space-x-2 text-[10px] font-mono text-champagne/80 uppercase tracking-widest transition-all"
                       >
-                        <Download size={12} />
-                        <span>DOWNLOAD FILE</span>
+                        {provider.type === 'web' || provider.type === 'pdf' ? (
+                          <>
+                            <ExternalLink size={12} />
+                            <span>{provider.type === 'pdf' ? 'VIEW PDF' : 'VISIT WEBSITE'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download size={12} />
+                            <span>DOWNLOAD FILE</span>
+                          </>
+                        )}
                       </button>
                     )}
                   </div>

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Spotlight } from "@/components/ui/spotlight"
 import { SmokeBackground } from "@/components/ui/spooky-smoke-animation";
 import { Canvas } from "@react-three/fiber"
-import { ShaderPlane, EnergyRing } from "@/components/ui/background-paper-shaders"
+import { ShaderPlane } from "@/components/ui/background-paper-shaders"
  
 import { useState, useEffect } from "react";
  
