@@ -1475,6 +1475,11 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
   const handleDownload = (id, targetUrl) => {
     if (downloadProgress[id]) return;
 
+    // Open link synchronously inside user event handler to bypass popup blockers
+    if (targetUrl) {
+      window.open(targetUrl, '_blank');
+    }
+
     setDownloadProgress(prev => ({ ...prev, [id]: { status: 'loading', percent: 0 } }));
 
     let currentPercent = 0;
@@ -1484,11 +1489,6 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
         currentPercent = 100;
         clearInterval(interval);
         setDownloadProgress(prev => ({ ...prev, [id]: { status: 'done', percent: 100 } }));
-        
-        // Open Google Drive URL in a new window/tab
-        if (targetUrl) {
-          window.open(targetUrl, '_blank');
-        }
 
         setTimeout(() => {
           setDownloadProgress(prev => {
@@ -1500,7 +1500,7 @@ function AccelerateView({ setView, attachments, addAttachment, deleteAttachment,
       } else {
         setDownloadProgress(prev => ({ ...prev, [id]: { status: 'loading', percent: currentPercent } }));
       }
-    }, 200);
+    }, 150);
   };
 
   const filteredAttachments = attachments.filter(file => {
